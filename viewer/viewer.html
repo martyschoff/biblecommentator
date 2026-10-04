@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bible Viewer — John 1</title>
+<style>
+:root{
+  --bg:#faf9f6; --txt:#2b2620; --panel:#f3efe6; --edge:#e0d6c2;
+  --accent:#8a6d3b;
+  /* layer colors (light, distinct) */
+  --c-ot:#ffe9a8;         /* NT citing OT - warm yellow */
+  --c-fathers:#d6e9ff;    /* Church Fathers - light blue */
+  --c-rcdoctors:#ffd9e8;  /* RC Doctors - light pink */
+  --c-wright:#d9f2d9;     /* N.T. Wright - light green */
+  --c-calvin:#eadcff;     /* Calvin - light violet */
+  --c-luther:#ffe0cc;     /* Luther - light orange */
+  --c-serif:Georgia,'Times New Roman',serif;
+}
+*{box-sizing:border-box}
+body{margin:0;display:flex;min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--c-serif)}
+/* LEFT: scripture */
+#scripture{flex:1;padding:28px 36px;max-width:820px}
+h1{font-size:26px;margin:0 0 2px}
+.crumbs{font:12px/1.4 -apple-system,sans-serif;color:#8a7a66;margin:4px 0 22px}
+.crumbs a{color:var(--accent);text-decoration:none}
+p.v{margin:0 0 10px;text-indent:1.5em;line-height:1.75}
+sup.vnum{font:11px -apple-system,sans-serif;color:#a2937d;margin-right:4px}
+/* RIGHT: layer panel */
+#layers{width:250px;background:var(--panel);border-left:1px solid var(--edge);padding:20px 18px;
+  font:13px/1.5 -apple-system,sans-serif;position:sticky;top:0;height:100vh;overflow-y:auto}
+#layers h2{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:#8a7a66;margin:0 0 12px}
+button.layer{display:flex;align-items:center;gap:8px;width:100%;text-align:left;
+  background:transparent;border:none;border-radius:8px;padding:9px 10px;margin-bottom:6px;
+  cursor:pointer;font:13px -apple-system,sans-serif;color:var(--txt)}
+button.layer:hover{background:#e8e0cf}
+button.layer .sw{width:16px;height:16px;border-radius:4px;flex:none;border:1px solid #00000018}
+button.layer .check{width:16px;height:16px;flex:none;color:#4a7c2f;font-weight:bold;visibility:hidden}
+button.layer.on .check{visibility:visible}
+button.layer .count{margin-left:auto;color:#a2937d;font-size:11px}
+/* citation highlights in text */
+mark.hl{border-radius:3px;padding:0 1px}
+/* citation detail tooltip area */
+#citedetail{margin-top:16px;border-top:1px solid var(--edge);padding-top:12px;font-size:12px;color:#5a4632}
+.citem{background:#fff;border:1px solid var(--edge);border-radius:6px;padding:8px 10px;margin-bottom:8px}
+.citem .who{font-weight:600;color:var(--accent)}
+.citem .goto{color:#8a6d3b;font-size:11px;text-decoration:none}
+</style>
+</head>
+<body>
+<div id="scripture">
+  <h1>John 1</h1>
+  <div class="crumbs"><a href="/nt/John/">John</a> · Berean Standard Bible · <span id="citetotal">…</span></div>
+  <div id="text"></div>
+</div>
+<div id="layers">
+  <h2>Citation layers</h2>
+  <div id="layerbuttons"></div>
+  <div id="citedetail"></div>
+</div>
+<script>
+const BOOK = {t:"nt", book:"John", chap:1};
+const LAYERS = [
+  {key:"ot",        label:"NT → OT",        color:"var(--c-ot)"},
+  {key:"fathers",   label:"Church Fathers", color:"var(--c-fathers)"},
+  {key:"rcdoctors", label:"RC Doctors",     color:"var(--c-rcdoctors)"},
+  {key:"wright",    label:"N.T. Wright",    color:"var(--c-wright)"},
+  {key:"calvin",    label:"Calvin",         color:"var(--c-calvin)"},
+  {key:"luther",    label:"Luther",         color:"var(--c-luther)"},
+];
+const COLORS = {"ot":"#ffe9a8","fathers":"#d6e9ff","rcdoctors":"#ffd9e8","wright":"#d9f2d9","calvin":"#eadcff","luther":"#ffe0cc"};
+const state = {};  // layerKey -> on/off (start: fathers+ot on)
+LAYERS.forEach(l => state[l.key] = (l.key==="ot" || l.key==="fathers"));
+
+let CITATIONS = {};   // layer -> [{verse:int, text, src}]
+let VERSES = [];      // [{v:int, text}]
+
+async function loadData(){
+  // fetch chapter text via the bible server's data endpoints (reuse /api pages)
+  const [chap, cites] = await Promise.all([
+    fetch(`/api/chapter/${BOOK.t}/${BOOK.book}/${BOOK.chap}`).then(r=>r.json()),
+    fetch(`/api/citations/${BOOK.t}/${BOOK.book}/${BOOK.chap}`).then(r=>r.json())
+  ]);
+  VERSES = chap.verses;
+  CITATIONS = cites;
+}
+
+function renderButtons(){
+  const el = document.getElementById("layerbuttons");
+  el.innerHTML = "";
+  for (const L of LAYERS){
+    const n = (CITATIONS[L.key]||[]).length;
+    const b = document.createElement("button");
+    b.className = "layer" + (state[L.key] ? " on" : "");
+    b.innerHTML = `<span class="check">✓</span><span class="sw" style="background:${COLORS[L.key]}"></span>
+      <span>${L.label}</span><span class="count">${n||""}</span>`;
+    b.onclick = () => { state[L.key] = !state[L.key]; renderAll(); };
+    el.appendChild(b);
+  }
+  const total = LAYERS.reduce((a,L)=> a + (state[L.key] ? (CITATIONS[L.key]||[]).length : 0), 0);
+  document.getElementById("citetotal").textContent = total ? `${total} citations shown` : "no layers on";
+}
+
+function renderText(){
+  const el = document.getElementById("text");
+  el.innerHTML = "";
+  // citation coloring: verse -> list of (layer, citation)
+  const byVerse = {};
+  for (const L of LAYERS){
+    if (!state[L.key]) continue;
+    for (const c of (CITATIONS[L.key]||[])){
+      (byVerse[c.verse] = byVerse[c.verse] || []).push({layer:L.key, ...c});
+    }
+  }
+  for (const v of VERSES){
+    const p = document.createElement("p");
+    p.className = "v";
+    p.innerHTML = `<sup class="vnum">${v.v}</sup>`;
+    const cites = byVerse[v.v] || [];
+    if (cites.length){
+      // overlap rule: background = first layer's color; text color shifts when 2+ overlap
+      const first = cites[0].layer;
+      const overlap = cites.length > 1;
+      p.innerHTML += `<mark class="hl" style="background:${COLORS[first]};
+        ${overlap ? `text-decoration:underline 2px ${COLORS[cites[1].layer]}; text-decoration-skip-ink:none;` : ''}">
+        ${v.text}</mark>`;
+      p.style.cursor = "pointer";
+      p.onclick = () => showDetail(v.v, cites);
+    } else {
+      p.innerHTML += v.text;
+    }
+    el.appendChild(p);
+  }
+}
+
+function showDetail(v, cites){
+  const el = document.getElementById("citedetail");
+  el.innerHTML = `<h2 style="font-size:13px;margin:0 0 8px">John 1:${v} — ${cites.length} citation${cites.length>1?'s':''}</h2>`;
+  for (const c of cites){
+    const d = document.createElement("div");
+    d.className = "citem";
+    d.style.borderLeft = `3px solid ${COLORS[c.layer]}`;
+    const who = c.who || c.layer;
+    d.innerHTML = `<span class="who">${who}</span> — ${c.text.slice(0,140)}<br>
+      ${c.src ? `<a class="goto" href="${c.src}" target="_blank">view source →</a>` : ""}`;
+    el.appendChild(d);
+  }
+}
+
+function renderAll(){ renderButtons(); renderText(); }
+
+loadData().then(renderAll);
+</script>
+</body>
+</html>
