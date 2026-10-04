@@ -70,7 +70,7 @@ const LAYERS = [
 ];
 const COLORS = {"ot":"#ffe9a8","fathers":"#d6e9ff","rcdoctors":"#ffd9e8","wright":"#d9f2d9","calvin":"#eadcff","luther":"#ffe0cc"};
 const state = {};  // layerKey -> on/off (start: fathers+ot on)
-LAYERS.forEach(l => state[l.key] = (l.key==="ot" || l.key==="fathers"));
+LAYERS.forEach(l => state[l.key] = false);  // default: nothing checked
 
 let CITATIONS = {};   // layer -> [{verse:int, text, src}]
 let VERSES = [];      // [{v:int, text}]
@@ -119,11 +119,11 @@ function renderText(){
     const cites = byVerse[v.v] || [];
     if (cites.length){
       // overlap rule: background = first layer's color; text color shifts when 2+ overlap
-      const first = cites[0].layer;
-      const overlap = cites.length > 1;
-      // overlap: bg = first layer color; text color = second layer color (visible overlap cue)
-      const txtColor = overlap ? COLORS[cites[1].layer] : '';
-      p.innerHTML += `<mark class="hl" style="background:${COLORS[first]};color:${txtColor}">${v.text}</mark>`;
+      // overlap: bg = first ON layer with a cite on this verse; text = second's color
+      const onCite = LAYERS.filter(L => state[L.key] && (CITATIONS[L.key]||[]).some(c => c.verse === v.v));
+      const bgc = onCite.length ? COLORS[onCite[0].key] : '';
+      const txtc = onCite.length > 1 ? COLORS[onCite[1].key] : '';
+      p.innerHTML += `<mark class="hl" style="background:${bgc};color:${txtc}">${v.text}</mark>`;
       p.style.cursor = "pointer";
       p.onclick = () => showDetail(v.v, cites);
     } else {
