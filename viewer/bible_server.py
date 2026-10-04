@@ -10,6 +10,7 @@
 import html
 import os
 import re
+import sqlite3
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -80,9 +81,10 @@ class Handler(BaseHTTPRequestHandler):
         path = urllib.parse.unquote(self.path.split("?")[0]).strip("/")
         parts = [p for p in path.split("/") if p]
 
-        # /fathers/<vol>          -> raw volume text with line anchors (source view)
-        # /fathers/<vol>/L<n>     -> jump to line n
+        # /fathers/<vol>          -> volume TOC (works with links)
+        # /fathers/<vol>/L<n>     -> the whole WORK containing line n, highlighted
         if len(parts) >= 1 and parts[0] == "fathers":
+            import bisect
             vol = parts[1] if len(parts) > 1 else "anf01"
             anchor = None
             if len(parts) > 2 and parts[2].startswith("L"):
@@ -94,16 +96,34 @@ class Handler(BaseHTTPRequestHandler):
             if not os.path.exists(f):
                 self._send(f"<h1>Volume not found</h1>{STYLE}"); return
             lines = open(f, encoding="utf-8", errors="replace").read().splitlines()
-            rows = [f"<h1>{vol} — source text</h1>", STYLE,
-                    "<div class='meta'>{len(lines)} lines · citation src: links point here</div>"]
+
+            # section map from DB (whole works, not snippets)
+            con = sqlite3.connect("file:/Users/martinschoffstall/.hermes/fathers/citations.db?mode=ro", uri=True)
+            secs = con.execute("SELECT line_num, father, work_key, work_title FROM sections WHERE vol=? ORDER BY line_num", (vol,)).fetchall()
+            con.close()
+
             if anchor:
-                lo, hi = max(0, anchor - 6), min(len(lines), anchor + 6)
+                starts = [s[0] for s in secs]
+                i = bisect.bisect_right(starts, anchor) - 1
+                if i < 0: i = 0
+                lo, hi = secs[i][0], (secs[i+1][0] - 1 if i+1 < len(secs) else len(lines))
+                cur_father, cur_title = secs[i][1], secs[i][3]
             else:
-                lo, hi = 0, min(len(lines), 400)
+                lo, hi, cur_father, cur_title = 1, min(len(lines), 200), "", ""
+
+            crumb = f" &middot; <a href='/fathers/{vol}'>{vol} contents</a>"
+            rows = [f"<h1>{html.escape(cur_title or vol)}</h1>", STYLE,
+                    f"<div class='crumbs'><a href='/fathers/{vol}'>Fathers</a>{crumb if anchor else ''}{f' &middot; by {html.escape(cur_father)}' if cur_father else ''} &middot; lines {lo+1}&ndash;{hi}</div>"]
+            if not anchor:
+                rows.append("<div class='chapters'>" + " ".join(
+                    f"<a href='/fathers/{vol}/L{s[0]}'>{html.escape(s[3][:40])}</a>" for s in secs) + "</div>")
+                rows.append(f"<div class='meta'>{len(lines)} lines total</div>")
             for i in range(lo, hi):
                 n = i + 1
-                mark = " id='L{}'".format(n) + (" style='background:#f3ead9'" if n == anchor else "")
-                rows.append(f"<p{mark}><a href='#L{n}' style='color:#a2937d;font-size:11px;text-decoration:none'>{n}</a> {html.escape(lines[i])}</p>")
+                hl = " style='background:#f3ead9;border-left:3px solid #b08d4f;padding-left:6px'" if n == anchor else ""
+                rows.append(f"<p id='L{n}'{hl}><a href='#L{n}' style='color:#a2937d;font-size:11px;text-decoration:none'>{n}</a> {html.escape(lines[i])}</p>")
+            if anchor and lo > 0:
+                rows.append(f"<div class='meta'>&middot; <a href='/fathers/{vol}/L{lo}'>&uarr; start of work</a></div>")
             self._send("\n".join(rows))
             return
 
