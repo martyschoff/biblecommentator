@@ -13,6 +13,25 @@ DB_PATH = os.path.join(BASE, "citations.db")
 VOLUMES_TO_PROCESS = ['anf01', 'anf03', 'anf04', 'anf02', 'anf05', 'anf06', 'anf07', 'anf08', 'anf09']
 
 BOOK_MAP = {
+    # full names (ANF/NPNF cite both ways: 'John i.' and 'Joh. i.')
+    'Genesis': 'Genesis', 'Exodus': 'Exodus', 'Leviticus': 'Leviticus', 'Numbers': 'Numbers',
+    'Deuteronomy': 'Deuteronomy', 'Joshua': 'Joshua', 'Judges': 'Judges', 'Ruth': 'Ruth',
+    'Samuel': '2 Samuel', 'Kings': '2 Kings', 'Chronicles': '2 Chronicles',
+    'Ezra': 'Ezra', 'Nehemiah': 'Nehemiah', 'Esther': 'Esther', 'Job': 'Job',
+    'Psalms': 'Psalms', 'Psalm': 'Psalms', 'Proverbs': 'Proverbs', 'Proverb': 'Proverbs',
+    'Ecclesiastes': 'Ecclesiastes', 'Song': 'Song of Solomon', 'Isaiah': 'Isaiah',
+    'Jeremiah': 'Jeremiah', 'Lamentations': 'Lamentations', 'Ezekiel': 'Ezekiel',
+    'Daniel': 'Daniel', 'Hosea': 'Hosea', 'Joel': 'Joel', 'Amos': 'Amos',
+    'Obadiah': 'Obadiah', 'Jonah': 'Jonah', 'Micah': 'Micah', 'Nahum': 'Nahum',
+    'Habakkuk': 'Habakkuk', 'Zephaniah': 'Zephaniah', 'Haggai': 'Haggai',
+    'Zechariah': 'Zechariah', 'Malachi': 'Malachi',
+    'Matthew': 'Matthew', 'Mark': 'Mark', 'Luke': 'Luke', 'John': 'John',
+    'Acts': 'Acts', 'Romans': 'Romans', 'Corinthians': '2 Corinthians',
+    'Galatians': 'Galatians', 'Ephesians': 'Ephesians', 'Philippians': 'Philippians',
+    'Colossians': 'Colossians', 'Thessalonians': '2 Thessalonians', 'Timothy': '2 Timothy',
+    'Titus': 'Titus', 'Philemon': 'Philemon', 'Hebrews': 'Hebrews', 'James': 'James',
+    'Peter': '2 Peter', 'Jude': 'Jude', 'Revelation': 'Revelation',
+    # abbreviations
     'Gen': 'Genesis', 'Gen.': 'Genesis',
     'Ex': 'Exodus', 'Exo': 'Exodus', 'Ex.': 'Exodus', 'Exod': 'Exodus', 'Exod.': 'Exodus',
     'Lev': 'Leviticus', 'Lev.': 'Leviticus',
