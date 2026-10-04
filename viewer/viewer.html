@@ -140,9 +140,11 @@ function showDetail(v, cites){
     const d = document.createElement("div");
     d.className = "citem";
     d.style.borderLeft = `3px solid ${COLORS[c.layer]}`;
-    const who = c.who || c.layer;
-    d.innerHTML = `<span class="who">${who}</span> — ${c.text.slice(0,140)}<br>
-      ${c.src ? `<a class="goto" href="${c.src}" target="_blank">view source →</a>` : ""}`;
+    // find a video URL in the citation text (https://youtu.be/...) if present
+    const ym = (c.text || "").match(/https:\/\/youtu\.be\/([A-Za-z0-9_-]{11})/);
+    const vlink = ym ? ` &middot; <a class="goto" href="https://www.youtube.com/watch?v=${ym[1]}" target="_blank">watch the video ▶</a>` : "";
+    const go = c.src ? ` &middot; <a class="goto" href="${c.src}" target="_blank">view source →</a>` : "";
+    d.innerHTML = `<span class="who">${c.who || c.layer}</span> — ${c.text.slice(0,140)}${vlink}${go}`;
     el.appendChild(d);
   }
 }
