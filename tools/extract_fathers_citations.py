@@ -31,6 +31,15 @@ BOOK_MAP = {
     'Colossians': 'Colossians', 'Thessalonians': '2 Thessalonians', 'Timothy': '2 Timothy',
     'Titus': 'Titus', 'Philemon': 'Philemon', 'Hebrews': 'Hebrews', 'James': 'James',
     'Peter': '2 Peter', 'Jude': 'Jude', 'Revelation': 'Revelation',
+    # numbered books, full names (MUST sort before bare 'John'/'Peter' etc.)
+    '1 John': '1 John', '2 John': '2 John', '3 John': '3 John',
+    '1 Peter': '1 Peter', '2 Peter': '2 Peter',
+    '1 Timothy': '1 Timothy', '2 Timothy': '2 Timothy',
+    '1 Thessalonians': '1 Thessalonians', '2 Thessalonians': '2 Thessalonians',
+    '1 Corinthians': '1 Corinthians', '2 Corinthians': '2 Corinthians',
+    '1 Samuel': '1 Samuel', '2 Samuel': '2 Samuel',
+    '1 Kings': '1 Kings', '2 Kings': '2 Kings',
+    '1 Chronicles': '1 Chronicles', '2 Chronicles': '2 Chronicles',
     # abbreviations
     'Gen': 'Genesis', 'Gen.': 'Genesis',
     'Ex': 'Exodus', 'Exo': 'Exodus', 'Ex.': 'Exodus', 'Exod': 'Exodus', 'Exod.': 'Exodus',
