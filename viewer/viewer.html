@@ -121,9 +121,9 @@ function renderText(){
       // overlap rule: background = first layer's color; text color shifts when 2+ overlap
       const first = cites[0].layer;
       const overlap = cites.length > 1;
-      p.innerHTML += `<mark class="hl" style="background:${COLORS[first]};
-        ${overlap ? `text-decoration:underline 2px ${COLORS[cites[1].layer]}; text-decoration-skip-ink:none;` : ''}">
-        ${v.text}</mark>`;
+      // overlap: bg = first layer color; text color = second layer color (visible overlap cue)
+      const txtColor = overlap ? COLORS[cites[1].layer] : '';
+      p.innerHTML += `<mark class="hl" style="background:${COLORS[first]};color:${txtColor}">${v.text}</mark>`;
       p.style.cursor = "pointer";
       p.onclick = () => showDetail(v.v, cites);
     } else {
