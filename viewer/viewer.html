@@ -163,14 +163,46 @@ async function renderChapter(t, book, chap){
   renderButtons(); renderText();
 }
 
+// display-name normalization for attributor variants/abbreviations
+const NAME_FIX = {
+  "Remig":"Remigius of Auxerre","Chrys":"Chrysostom","Pseudo-Chrys":"Pseudo-Chrysostom",
+  "Raban":"Rabanus Maurus","Rabanus":"Rabanus Maurus","Pseudo-Jerome":"Pseudo-Jerome",
+  "Thomas a Kempis":"Thomas à Kempis","Clement":"Clement of Alexandria",
+  "Victorinus":"Marius Victorinus","Basil":"Basil the Great",
+  "Gregory":"Gregory the Great","August":"Augustine"};
+// RC Doctors: full canonical roster (in traditional importance order) — shown always
+const RC_DOCTORS = ["Augustine","Jerome","Ambrose","Gregory the Great","Athanasius (eastern)",
+  "Basil the Great","Gregory of Nazianzus","John Chrysostom","Thomas Aquinas","Bonaventure",
+  "Anselm","Bernard of Clairvaux","Isidore of Seville","Peter Damian","Leo the Great",
+  "Peter Chrysologus","Hilary of Poitiers","Cyril of Alexandria","Cyril of Jerusalem",
+  "Ephrem the Syrian","John of Damascus","Bede the Venerable","Albert the Great",
+  "Lawrence of Brindisi","Teresa of Ávila","Catherine of Siena","Robert Bellarmine",
+  "Francis de Sales","Alphonsus Liguori","Jane Frances de Chantal","John Eudes",
+  "Louis Grignion de Montfort","Anthony of Padua","Peter Canisius","Ephrem","Irenaeus","Maximilian Kolbe"];
+// Church Fathers: top 20 by importance
+const TOP_FATHERS = ["Augustine","Chrysostom","Jerome","Tertullian","Ambrose","Athanasius",
+  "Irenaeus","Cyprian","Basil the Great","Origen","Gregory of Nyssa","Gregory the Great",
+  "Cyril of Jerusalem","Leo the Great","Clement of Alexandria","Ignatius","Justin Martyr",
+  "Hippolytus","Eusebius","Polycarp"];
+
 function attributorsOf(key){
   const set = new Set();
   for (const c of (CITATIONS[key]||[])){
     const seg = (c.text||"").split(" | ")[1] || "";
     const m = seg.match(/^([\w' .-]+?)\s*(?:\(via|,|\s\(|:)/);
-    if (m) set.add(m.group(1).trim());
+    if (m) set.add(NAME_FIX[m.group(1).trim()] || m.group(1).trim());
   }
-  return [...set].sort();
+  const found = [...set];
+  if (key === "rcdoctors"){
+    // show the full canonical roster; sort: present-in-data first, then canonical order
+    return RC_DOCTORS.filter(d => found.some(f => f.startsWith(d.split(" (")[0]) || d.startsWith(f)));
+  }
+  if (key === "fathers"){
+    const top = TOP_FATHERS.filter(f => found.includes(f));
+    const rest = found.filter(f => !top.includes(f)).sort();
+    return [...top, ...rest];
+  }
+  return found.sort();
 }
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -216,11 +248,16 @@ function renderButtons(){
   el.appendChild(hint);
 }
 
+function attributorOfText(text){
+  const seg = (text||"").split(" | ")[1] || "";
+  const m = seg.match(/^([\w' .-]+?)\s*(?:\(via|,|\s\(|:)/);
+  return m ? (NAME_FIX[m.group(1).trim()] || m.group(1).trim()) : "";
+}
 function matchesPick(c, key){
   if (!pickedDoctor.value || key !== pickedDoctor.layer) return true;
-  const seg = (c.text||"").split(" | ")[1] || "";
-  const m = seg.match(new RegExp("^(?:Doctor\\s+)?" + escRe(pickedDoctor.value) + "\\s*(?:\\(via|,|\\s\\(|:)"));
-  return !!m;
+  const a = attributorOfText(c.text);
+  if (!a) return false;
+  return a === pickedDoctor.value || pickedDoctor.value.startsWith(a) || a.startsWith(pickedDoctor.value.split(" (")[0]);
 }
 
 function renderText(){
