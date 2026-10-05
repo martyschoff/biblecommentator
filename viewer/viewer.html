@@ -100,7 +100,7 @@ const BG  = {"ot":"#fdeeb6","fathers":"#dbeafe","rcdoctors":"#fbdce8","wright":"
 const TX  = {"ot":"#7a5c00","fathers":"#1e4e8c","rcdoctors":"#97275e","wright":"#20691f","calvin":"#46297f","luther":"#a34a00"};
 const state = {}; const order = [];
 LAYERS.forEach(l => state[l.key] = false);
-const pickedDoctor = {value:""};   // individual-doctor filter for rcdoctors layer
+const pickedDoctor = {value:"", layer:"rcdoctors"};   // attributor filter (value+owning layer)
 
 let BOOKS = {nt:[]};
 let CITATIONS = {}; let VERSES = []; let CUR = null;
@@ -155,7 +155,7 @@ async function renderChapter(t, book, chap){
     fetch(`/api/citations/${t}/${encodeURIComponent(book)}/${chap}`).then(r=>r.json())
   ]);
   VERSES = chapData.verses; CITATIONS = cites;
-  pickedDoctor.value = "";
+  pickedDoctor.value = ""; pickedDoctor.layer = "rcdoctors";
   document.getElementById("content").innerHTML = `
     <h1>${book} <span class="chap">${chap}</span></h1>
     <div class="lede">select layers on the right — click a highlighted verse for its citations</div>
@@ -188,19 +188,26 @@ function renderButtons(){
         if (order.length >= 3) { const drop = order.shift(); state[drop] = false; }
         order.push(L.key); state[L.key] = true;
       } else { state[L.key] = false; const i = order.indexOf(L.key); if (i >= 0) order.splice(i,1); }
-      if (L.key === "rcdoctors" && !state[L.key]) pickedDoctor.value = "";
+      if (["rcdoctors","fathers"].includes(L.key) && !state[L.key] && pickedDoctor.layer === L.key) pickedDoctor.value = "";
       renderButtons(); renderText();
     };
     el.appendChild(b);
-    // RC Doctors: individual pickers dropdown when layer is on
-    if (L.key === "rcdoctors" && state[L.key]){
-      const who = attributorsOf("rcdoctors");
-      const sel = document.createElement("select");
-      sel.className = "drs";
-      sel.innerHTML = `<option value="">All attributors (${who.length})</option>` +
-        who.map(w => `<option${pickedDoctor.value===w?" selected":""}>${w}</option>`).join("");
-      sel.onchange = () => { pickedDoctor.value = sel.value; renderText(); };
-      el.appendChild(sel);
+    // RC Doctors + Fathers: individual attributor dropdown when layer is on
+    if (["rcdoctors","fathers"].includes(L.key) && state[L.key]){
+      const who = attributorsOf(L.key);
+      if (who.length){
+        const sel = document.createElement("select");
+        sel.className = "drs";
+        sel.innerHTML = `<option value="">All attributors (${who.length})</option>` +
+          who.map(w => `<option${pickedDoctor.value===w?" selected":""}>${w}</option>`).join("");
+        sel.onchange = () => { pickedDoctor.value = sel.value; pickedDoctor.layer = L.key; renderText(); };
+        el.appendChild(sel);
+      } else {
+        const none = document.createElement("div");
+        none.className = "hint";
+        none.textContent = "no attributors for this chapter";
+        el.appendChild(none);
+      }
     }
   }
   const hint = document.createElement("div");
@@ -209,8 +216,8 @@ function renderButtons(){
   el.appendChild(hint);
 }
 
-function matchesPick(c){
-  if (!pickedDoctor.value) return true;
+function matchesPick(c, key){
+  if (!pickedDoctor.value || key !== pickedDoctor.layer) return true;
   const seg = (c.text||"").split(" | ")[1] || "";
   const m = seg.match(new RegExp("^(?:Doctor\\s+)?" + escRe(pickedDoctor.value) + "\\s*(?:\\(via|,|\\s\\(|:)"));
   return !!m;
@@ -223,7 +230,7 @@ function renderText(){
     const p = document.createElement("p");
     p.className = "v";
     p.innerHTML = `<sup class="vnum">${v.v}</sup>`;
-    const onCite = order.filter(k => state[k] && (CITATIONS[k]||[]).some(c => c.verse === v.v && matchesPick(c)));
+    const onCite = order.filter(k => state[k] && (CITATIONS[k]||[]).some(c => c.verse === v.v && matchesPick(c, k)));
     if (onCite.length){
       const bgc = BG[onCite[0]];
       const txtc = onCite.length > 1 ? TX[onCite[1]] : '';
@@ -242,7 +249,7 @@ function showDetail(v){
   const all = [];
   for (const k of order){
     for (const c of (CITATIONS[k]||[])){
-      if (c.verse !== v || !matchesPick(c)) continue;
+      if (c.verse !== v || !matchesPick(c, k)) continue;
       all.push({layer:k, ...c});
     }
   }
