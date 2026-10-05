@@ -333,7 +333,7 @@ function showDetail(v){
       ${c.text.slice(0,130)}<br>
       <span class="passage" id="passage-${all.indexOf(c)}"></span><br>
       ${ym?`<a class="goto" target="_blank" href="https://www.youtube.com/watch?v=${ym[1]}">watch the video ▶</a> `:""}
-      ${c.src?`<a class="goto" target="_blank" href="/passage${c.src.match(/(fathers[^#?]*\/L\d+)/)?'/'+c.src.match(/(fathers[^#?]*\/L\d+)/)[1]:c.src}">show the passage →</a>`:""}`;
+      ${c.src?`<a class="goto" target="_blank" href="/passage/${(c.src.match(/fathers-text\/([^/#?]+)\.txt/) ? "text/"+c.src.match(/fathers-text\/([^/#?]+)\.txt/)[1] : (c.src.match(/fathers\/([^/#?]+)\//) ? "fathers/"+c.src.match(/fathers\/([^/#?]+)\//)[1] : ""))}/L${c.src.match(/L(\d+)/)[1]}">show the passage →</a>`:""}`;
     el.appendChild(d);
   }
 }
