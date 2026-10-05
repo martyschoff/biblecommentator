@@ -301,11 +301,14 @@ async function loadPassage(idx, src){
   const box = document.getElementById("passage-" + idx);
   if (!box || !src) return;
   box.textContent = "loading…";
-  const m = src.match(/fathers[^#?]*\/L(\d+)/) || null;
-  const vol = src.match(/fathers\/([^\/?#]+)/);
+  const lm = src.match(/L(\d+)/);
+  const tm = src.match(/fathers-text\/([^\/?#]+)\.txt/);
+  const fm = src.match(/fathers\/([^\/?#]+)\//);
+  const kind = tm ? "text" : "fathers";
+  const vol = tm ? tm[1] : (fm ? fm[1] : null);
   try {
-    if (!m || !vol) { box.textContent = "no passage preview available"; return; }
-    const r = await fetch(`/api/passage/${vol[1]}/L${m[1]}`).then(x => x.json());
+    if (!lm || !vol) { box.textContent = "no passage preview available"; return; }
+    const r = await fetch(`/api/passage/${kind}/${vol}/L${lm[1]}`).then(x => x.json());
     if (r.error) { box.textContent = "no passage preview available"; return; }
     box.innerHTML = `<div class="passagecard">
       <div class="passagehead">${r.vol} · line ${r.line} · ref: ${r.ref}</div>
