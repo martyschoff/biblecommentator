@@ -44,6 +44,16 @@ header .crumb a:hover{text-decoration:underline}
 .passagehead{font:600 10.5px var(--sans);color:var(--ink-3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
 .passagesnippet{font:400 15px var(--serif);line-height:1.7;color:var(--ink);margin-bottom:8px}
 .passagesnippet mark{background:#f5d97a;padding:0 2px;border-radius:3px}
+.hero{position:relative;min-height:480px;border-radius:12px;overflow:hidden;margin:-34px -48px 30px;
+  display:flex;align-items:center}
+.hero-art{position:absolute;inset:0;background:url("/piero_baptism.jpg") right center / cover no-repeat}
+.hero-fade{position:absolute;inset:0;
+  background:linear-gradient(90deg, var(--bg) 0%, rgba(251,249,244,.96) 30%, rgba(251,249,244,.75) 46%, rgba(251,249,244,0) 72%)}
+.hero-text{position:relative;padding:60px 40px 60px 48px;max-width:520px}
+.hero-kicker{font:600 11px var(--sans);letter-spacing:1.6px;color:var(--accent);margin-bottom:12px}
+.hero-title{font:600 46px/1.05 var(--sans);letter-spacing:-1px;margin:0 0 10px;color:var(--ink)}
+.hero-attr{font:400 13.5px var(--serif);font-style:italic;color:var(--ink-2);margin-bottom:14px}
+.hero-blurb{font:400 15px/1.65 var(--sans);color:var(--ink-2);max-width:400px}
 /* books: two columns, touch-target rows, hover wash */
 ul.books{list-style:none;padding:0;margin:0;columns:2;column-gap:44px}
 ul.books li{break-inside:avoid;margin:0 0 2px}
@@ -127,17 +137,24 @@ function renderHome(){
   document.getElementById("layers").classList.remove("active");
   setCrumb("");
   const el = document.getElementById("content");
+  const CANON = ["Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians","2 Corinthians",
+  "Galatians","Ephesians","Philippians","Colossians","1 Thessalonians","2 Thessalonians",
+  "1 Timothy","2 Timothy","Titus","Philemon","Hebrews","James","1 Peter","2 Peter",
+  "1 John","2 John","3 John","Jude","Revelation"];
+  const sorted = BOOKS.nt.slice().sort((a,b) => CANON.indexOf(a.book) - CANON.indexOf(b.book));
   el.innerHTML = `
-    <h1>New Testament</h1>
-    <div class="lede">27 books · Berean Standard Bible · click a book to read with its citation layers</div>
+    <div class="hero">
+      <div class="hero-art" role="img" aria-label="The Baptism of Christ, Piero della Francesca"></div>
+      <div class="hero-fade"></div>
+      <div class="hero-text">
+        <div class="hero-kicker">SACRED TEXT FOR DAILY READING</div>
+        <h1 class="hero-title">New Testament</h1>
+        <div class="hero-attr">The Baptism of Christ · Piero della Francesca · c. 1450</div>
+        <div class="hero-blurb">Twenty-seven books of the Berean Standard Bible, read with the citation layers of the Fathers, Doctors, and reformers.</div>
+      </div>
+    </div>
     <div class="section-label">Books</div>
-    <ul class="books">${(() => {
-      const CANON = ["Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians","2 Corinthians",
-      "Galatians","Ephesians","Philippians","Colossians","1 Thessalonians","2 Thessalonians",
-      "1 Timothy","2 Timothy","Titus","Philemon","Hebrews","James","1 Peter","2 Peter",
-      "1 John","2 John","3 John","Jude","Revelation"];
-      return BOOKS.nt.slice().sort((a,b) => CANON.indexOf(a.book) - CANON.indexOf(b.book));
-    })().map(b =>
+    <ul class="books">${sorted.map(b =>
       `<li><a href="#/nt/${encodeURIComponent(b.book)}/">${b.book}<span class="n">${b.chapters} ch</span></a></li>`).join("")}</ul>`;
 }
 
