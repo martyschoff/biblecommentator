@@ -70,7 +70,8 @@ const LAYERS = [
 ];
 const COLORS = {"ot":"#ffe9a8","fathers":"#d6e9ff","rcdoctors":"#ffd9e8","wright":"#d9f2d9","calvin":"#eadcff","luther":"#ffe0cc"};
 const DARK = {"ot":"#8a6d00","fathers":"#1d4f91","rcdoctors":"#a3326e","wright":"#1e6b1e","calvin":"#4a2d8f","luther":"#b34a00"};
-const state = {};  // layerKey -> on/off (start: fathers+ot on)
+const state = {};      // layerKey -> on/off
+const order = [];      // selection order (for stripes: first=bg, second=text, rest=stripes)
 LAYERS.forEach(l => state[l.key] = false);  // default: nothing checked
 
 let CITATIONS = {};   // layer -> [{verse:int, text, src}]
@@ -95,7 +96,16 @@ function renderButtons(){
     b.className = "layer" + (state[L.key] ? " on" : "");
     b.innerHTML = `<span class="check">✓</span><span class="sw" style="background:${COLORS[L.key]}"></span>
       <span>${L.label}</span><span class="count">${n||""}</span>`;
-    b.onclick = () => { state[L.key] = !state[L.key]; renderAll(); };
+    b.onclick = () => {
+      if (!state[L.key]) {
+        if (order.length >= 3) { const drop = order.shift(); state[drop] = false; }
+        order.push(L.key); state[L.key] = true;
+      } else {
+        state[L.key] = false;
+        const i = order.indexOf(L.key); if (i >= 0) order.splice(i, 1);
+      }
+      renderAll();
+    };
     el.appendChild(b);
   }
   const total = LAYERS.reduce((a,L)=> a + (state[L.key] ? (CITATIONS[L.key]||[]).length : 0), 0);
@@ -118,14 +128,16 @@ function renderText(){
     p.className = "v";
     p.innerHTML = `<sup class="vnum">${v.v}</sup>`;
     const cites = byVerse[v.v] || [];
-    // which ON layers cite this verse (in LAYERS order)
-    const onCite = LAYERS.filter(L => state[L.key] && (CITATIONS[L.key]||[]).some(c => c.verse === v.v));
+    // which ON layers cite this verse, in SELECTION order (order[0]=bg, [1]=text, [2+]=stripes)
+    const onCite = order.filter(k => state[k] && (CITATIONS[k]||[]).some(c => c.verse === v.v));
     if (onCite.length){
-      // one layer: light background of that layer's color, normal text
-      // two+ layers: bg = first layer color, TEXT = second layer color (darker shade for legibility)
-      const bgc = COLORS[onCite[0].key];
-      const txtc = onCite.length > 1 ? DARK[onCite[1].key] : '';
-      p.innerHTML += `<mark class="hl" style="background:${bgc};${txtc ? `color:${txtc};font-weight:600;` : ''}">${v.text}</mark>`;
+      const bgc = COLORS[onCite[0]];
+      const txtc = onCite.length > 1 ? DARK[onCite[1]] : '';
+      const stripes = onCite.slice(2);   // 3rd+ layers as stacked right-edge stripes
+      const stripeShadow = stripes.map((k, idx) =>
+        `inset -${5*(idx+1)}px 0 0 ${COLORS[k]}`).join(',');
+      const shadow = stripes.length ? `box-shadow:${stripeShadow};` : '';
+      p.innerHTML += `<mark class="hl" style="background:${bgc};${txtc ? `color:${txtc};font-weight:600;` : ''}${shadow}">${v.text}</mark>`;
       p.style.cursor = "pointer";
       p.onclick = () => showDetail(v.v, cites);
     } else {
