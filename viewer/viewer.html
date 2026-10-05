@@ -143,9 +143,9 @@ function renderHome(){
   const sorted = BOOKS.nt.slice().sort((a,b) => CANON.indexOf(a.book) - CANON.indexOf(b.book));
   el.innerHTML = `
     <div class="home-head">
-      <div class="hero-kicker">SACRED TEXT FOR DAILY READING</div>
+      <div class="hero-kicker">SACRED TEXT FOR DAILY STUDY</div>
       <h1>New Testament</h1>
-      <div class="lede">Twenty-seven books of the Berean Standard Bible, read with the citation layers of the Church Fathers, the Reformers, and the Doctors.</div>
+      <div class="lede" style="color:var(--ink);font-weight:500">Twenty-seven books of the Berean Standard Bible, read with the citation layers of the Church Fathers, the Reformers, and the Doctors.</div>
     </div>
     <div class="section-label">Books</div>
     <ul class="books">${sorted.map(b =>
