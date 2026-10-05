@@ -194,8 +194,8 @@ function attributorsOf(key){
   }
   const found = [...set];
   if (key === "rcdoctors"){
-    // show the full canonical roster; sort: present-in-data first, then canonical order
-    return RC_DOCTORS.filter(d => found.some(f => f.startsWith(d.split(" (")[0]) || d.startsWith(f)));
+    // always show the canonical roster (first 10 names), data or not
+    return RC_DOCTORS.slice(0, 10);
   }
   if (key === "fathers"){
     const top = TOP_FATHERS.filter(f => found.includes(f));
