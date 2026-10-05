@@ -24,7 +24,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);fon
 body::before{content:"";position:fixed;inset:0;z-index:-2;
   background:url("/baptism_sky.jpg") center top / cover no-repeat}
 body::after{content:"";position:fixed;inset:0;z-index:-1;
-  background:linear-gradient(180deg, rgba(251,249,244,.82) 0%, rgba(251,249,244,.9) 45%, rgba(251,249,244,.96) 100%)}
+  background:linear-gradient(180deg, rgba(251,249,244,.35) 0%, rgba(251,249,244,.55) 45%, rgba(251,249,244,.8) 100%)}
 
 /* sticky header: quiet brand + breadcrumb right */
 header{position:sticky;top:0;z-index:10;background:rgba(251,249,244,.93);backdrop-filter:blur(8px);
@@ -48,11 +48,16 @@ header .crumb a:hover{text-decoration:underline}
 .passagehead{font:600 10.5px var(--sans);color:var(--ink-3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
 .passagesnippet{font:400 15px var(--serif);line-height:1.7;color:var(--ink);margin-bottom:8px}
 .passagesnippet mark{background:#f5d97a;padding:0 2px;border-radius:3px}
+.home-head{padding:30px 0 10px}
+.home-head .hero-kicker{font:600 12px var(--sans);letter-spacing:1.6px;color:var(--accent);margin-bottom:10px;text-shadow:0 1px 8px rgba(251,249,244,.9)}
+.home-head h1{text-shadow:0 1px 12px rgba(251,249,244,.95)}
+.home-head .lede{max-width:520px}
 /* books: two columns, touch-target rows, hover wash */
 ul.books{list-style:none;padding:0;margin:0;columns:2;column-gap:44px}
 ul.books li{break-inside:avoid;margin:0 0 2px}
 ul.books a{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
   padding:10px 12px;border-radius:8px;color:var(--ink);text-decoration:none;font-size:18px;font-weight:500;transition:background .12s}
+ul.books a{background:rgba(255,253,248,.72)}
 ul.books a:hover{background:var(--accent-soft)}
 ul.books .n{font:500 12px var(--sans);color:var(--ink-3)}
 
@@ -137,6 +142,11 @@ function renderHome(){
   "1 John","2 John","3 John","Jude","Revelation"];
   const sorted = BOOKS.nt.slice().sort((a,b) => CANON.indexOf(a.book) - CANON.indexOf(b.book));
   el.innerHTML = `
+    <div class="home-head">
+      <div class="hero-kicker">SACRED TEXT FOR DAILY READING</div>
+      <h1>New Testament</h1>
+      <div class="lede">Twenty-seven books of the Berean Standard Bible, read with the citation layers of the Church Fathers, the Reformers, and the Doctors.</div>
+    </div>
     <div class="section-label">Books</div>
     <ul class="books">${sorted.map(b =>
       `<li><a href="#/nt/${encodeURIComponent(b.book)}/">${b.book}<span class="n">${b.chapters} ch</span></a></li>`).join("")}</ul>`;
