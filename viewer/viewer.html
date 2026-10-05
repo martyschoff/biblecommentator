@@ -39,6 +39,11 @@ header .crumb a:hover{text-decoration:underline}
 .lede{font:400 14px var(--sans);color:var(--ink-2);margin:0 0 24px}
 .section-label{font:600 11px var(--sans);text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-3);margin:22px 0 10px}
 
+.passagecard{background:var(--accent-soft);border:1px solid var(--edge);border-radius:8px;
+  padding:10px 12px;margin-top:8px}
+.passagehead{font:600 10.5px var(--sans);color:var(--ink-3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.passagesnippet{font:400 15px var(--serif);line-height:1.7;color:var(--ink);margin-bottom:8px}
+.passagesnippet mark{background:#f5d97a;padding:0 2px;border-radius:3px}
 /* books: two columns, touch-target rows, hover wash */
 ul.books{list-style:none;padding:0;margin:0;columns:2;column-gap:44px}
 ul.books li{break-inside:avoid;margin:0 0 2px}
@@ -281,6 +286,24 @@ function renderText(){
   }
 }
 
+async function loadPassage(idx, src){
+  const box = document.getElementById("passage-" + idx);
+  if (!box || !src) return;
+  box.textContent = "loading…";
+  const m = src.match(/fathers[^#?]*\/L(\d+)/) || null;
+  const vol = src.match(/fathers\/([^\/?#]+)/);
+  try {
+    if (!m || !vol) { box.textContent = "no passage preview available"; return; }
+    const r = await fetch(`/api/passage/${vol[1]}/L${m[1]}`).then(x => x.json());
+    if (r.error) { box.textContent = "no passage preview available"; return; }
+    box.innerHTML = `<div class="passagecard">
+      <div class="passagehead">${r.vol} · line ${r.line} · ref: ${r.ref}</div>
+      <div class="passagesnippet">${r.snippet}</div>
+      <a class="goto" target="_blank" href="${r.raw}">open the full raw source →</a>
+    </div>`;
+  } catch (e) { box.textContent = "passage preview unavailable"; }
+}
+
 function showDetail(v){
   const el = document.getElementById("citedetail");
   const all = [];
@@ -297,8 +320,9 @@ function showDetail(v){
     const ym = (c.text||"").match(/https:\/\/youtu\.be\/([A-Za-z0-9_-]{11})/);
     d.innerHTML = `<span class="who" style="color:${TX[c.layer]}">${(c.who&&c.who!=="src")?c.who:c.layer}</span>
       ${c.text.slice(0,130)}<br>
+      <span class="passage" id="passage-${all.indexOf(c)}"></span><br>
       ${ym?`<a class="goto" target="_blank" href="https://www.youtube.com/watch?v=${ym[1]}">watch the video ▶</a> `:""}
-      ${c.src?`<a class="goto" target="_blank" href="${c.src}">source →</a>`:""}`;
+      ${c.src?`<a class="goto" href="javascript:void(0)" onclick="loadPassage(${all.indexOf(c)},'${c.src}')">show the passage →</a>`:""}`;
     el.appendChild(d);
   }
 }
