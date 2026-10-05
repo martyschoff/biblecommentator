@@ -46,7 +46,7 @@ sup.vnum{font:11px -apple-system,sans-serif;color:#a2937d;margin-right:4px}
 .crumbs{font:12px/1.4 -apple-system,sans-serif;color:#8a7a66;margin-bottom:16px}
 .crumbs a{color:var(--accent);text-decoration:none}
 </style></head><body>
-<header><h1>The Holy Bible</h1><span class="ed">Berea Edition — Berean Standard Bible · with citation layers</span></header>
+<header><h1>New Testament</h1><span class="ed">Berea Edition — Berean Standard Bible · with citation layers</span></header>
 <div id="main"><div id="content"></div>
 <div id="layers"><h2>Citation layers</h2><div id="layerbuttons"></div><div id="citedetail"></div></div></div>
 <script>
@@ -78,15 +78,18 @@ function route(){
   renderHome();
 }
 
+const CANON = ["Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians","2 Corinthians",
+"Galatians","Ephesians","Philippians","Colossians","1 Thessalonians","2 Thessalonians",
+"1 Timothy","2 Timothy","Titus","Philemon","Hebrews","James","1 Peter","2 Peter",
+"1 John","2 John","3 John","Jude","Revelation"];
+
 function renderHome(){
   document.getElementById("layers").classList.remove("active");
   const el = document.getElementById("content");
-  el.innerHTML = `<div class="bookcols">
-    <div><h2>Old Testament</h2><ul class="books">${BOOKS.ot.map(b =>
-      `<li><a href="#/ot/${encodeURIComponent(b.book)}/">${b.book}<span class="n">${b.chapters}</span></a></li>`).join("")}</ul></div>
-    <div><h2>New Testament</h2><ul class="books">${BOOKS.nt.map(b =>
-      `<li><a href="#/nt/${encodeURIComponent(b.book)}/">${b.book}<span class="n">${b.chapters}</span></a></li>`).join("")}</ul></div>
-  </div>`;
+  const sorted = BOOKS.nt.slice().sort((a,b) => CANON.indexOf(a.book) - CANON.indexOf(b.book));
+  el.innerHTML = `<h2 style="font-size:16px;color:var(--accent);margin:6px 0 10px">New Testament — ${sorted.length} books</h2>
+    <ul class="books">${sorted.map(b =>
+      `<li><a href="#/nt/${encodeURIComponent(b.book)}/">${b.book}<span class="n">${b.chapters}</span></a></li>`).join("")}</ul>`;
 }
 
 function renderBook(t, book){
