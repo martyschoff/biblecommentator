@@ -7,7 +7,7 @@
 <style>
 /* ===== design system: one palette, two typefaces, generous space ===== */
 :root{
-  --bg:#fbf9f4; --ink:#211d16; --ink-2:#6b6154; --ink-3:#a09483;
+  --bg:#fbf9f4; --ink:#14100a; --ink-2:#3f382d; --ink-3:#7a6e5d;
   --accent:#7c5f2e; --accent-soft:#f2e9d8; --panel:#f6f1e7; --edge:#e8e0d0;
   --ot-bg:#fdeeb6;  --ot-tx:#7a5c00;
   --fa-bg:#dbeafe;  --fa-tx:#1e4e8c;
@@ -20,7 +20,11 @@
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:18px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:19px}
+body::before{content:"";position:fixed;inset:0;z-index:-2;
+  background:url("/baptism_sky.jpg") center top / cover no-repeat}
+body::after{content:"";position:fixed;inset:0;z-index:-1;
+  background:linear-gradient(180deg, rgba(251,249,244,.82) 0%, rgba(251,249,244,.9) 45%, rgba(251,249,244,.96) 100%)}
 
 /* sticky header: quiet brand + breadcrumb right */
 header{position:sticky;top:0;z-index:10;background:rgba(251,249,244,.93);backdrop-filter:blur(8px);
@@ -34,9 +38,9 @@ header .crumb a:hover{text-decoration:underline}
 
 #main{display:flex;align-items:flex-start}
 #content{flex:1;padding:34px 48px 90px;max-width:800px}
-#content h1{font:600 34px/1.15 var(--sans);letter-spacing:-.5px;margin:0 0 6px}
+#content h1{font:600 40px/1.12 var(--sans);letter-spacing:-.5px;margin:0 0 6px}
 #content h1 .chap{color:var(--ink-3);font-weight:500}
-.lede{font:400 14px var(--sans);color:var(--ink-2);margin:0 0 24px}
+.lede{font:400 16px var(--sans);color:var(--ink);margin:0 0 24px}
 .section-label{font:600 11px var(--sans);text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-3);margin:22px 0 10px}
 
 .passagecard{background:var(--accent-soft);border:1px solid var(--edge);border-radius:8px;
@@ -44,20 +48,11 @@ header .crumb a:hover{text-decoration:underline}
 .passagehead{font:600 10.5px var(--sans);color:var(--ink-3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
 .passagesnippet{font:400 15px var(--serif);line-height:1.7;color:var(--ink);margin-bottom:8px}
 .passagesnippet mark{background:#f5d97a;padding:0 2px;border-radius:3px}
-.hero{position:relative;min-height:320px;border-radius:12px;overflow:hidden;margin:-34px -48px 30px;
-  display:flex;align-items:center}
-.hero-art{position:absolute;inset:0;background:url("/piero_baptism.jpg") right center / contain no-repeat}
-.hero-fade{position:absolute;inset:0;
-  background:linear-gradient(90deg, var(--bg) 0%, rgba(251,249,244,.96) 30%, rgba(251,249,244,.75) 46%, rgba(251,249,244,0) 72%)}
-.hero-text{position:relative;padding:60px 40px 60px 48px;max-width:520px}
-.hero-kicker{font:600 11px var(--sans);letter-spacing:1.6px;color:var(--accent);margin-bottom:12px}
-.hero-title{font:600 46px/1.05 var(--sans);letter-spacing:-1px;margin:0 0 14px;color:var(--ink)}
-.hero-blurb{font:400 15px/1.65 var(--sans);color:var(--ink-2);max-width:400px}
 /* books: two columns, touch-target rows, hover wash */
 ul.books{list-style:none;padding:0;margin:0;columns:2;column-gap:44px}
 ul.books li{break-inside:avoid;margin:0 0 2px}
 ul.books a{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
-  padding:9px 12px;border-radius:8px;color:var(--ink);text-decoration:none;font-size:16.5px;transition:background .12s}
+  padding:10px 12px;border-radius:8px;color:var(--ink);text-decoration:none;font-size:18px;font-weight:500;transition:background .12s}
 ul.books a:hover{background:var(--accent-soft)}
 ul.books .n{font:500 12px var(--sans);color:var(--ink-3)}
 
@@ -68,12 +63,12 @@ ul.books .n{font:500 12px var(--sans);color:var(--ink-3)}
 .chapters a:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
 
 /* reading view */
-p.v{margin:0 0 15px;text-indent:1.6em;line-height:1.85;font-size:19.5px}
+p.v{margin:0 0 15px;text-indent:1.6em;line-height:1.85;font-size:20.5px}
 sup.vnum{font:600 10.5px var(--sans);color:var(--accent);margin-right:5px;vertical-align:28%}
 mark.hl{border-radius:4px;padding:1px 0;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 
 /* layers panel */
-#layers{width:280px;flex:none;background:var(--panel);border-left:1px solid var(--edge);
+#layers{width:280px;flex:none;background:rgba(246,241,231,.92);border-left:1px solid var(--edge);
   padding:22px 18px;font-family:var(--sans);position:sticky;top:56px;height:calc(100vh - 56px);
   overflow-y:auto;display:none}
 #layers.active{display:block}
@@ -142,15 +137,6 @@ function renderHome(){
   "1 John","2 John","3 John","Jude","Revelation"];
   const sorted = BOOKS.nt.slice().sort((a,b) => CANON.indexOf(a.book) - CANON.indexOf(b.book));
   el.innerHTML = `
-    <div class="hero">
-      <div class="hero-art" role="img" aria-label="The Baptism of Christ, Piero della Francesca"></div>
-      <div class="hero-fade"></div>
-      <div class="hero-text">
-        <div class="hero-kicker">SACRED TEXT FOR DAILY READING</div>
-        <h1 class="hero-title">New Testament</h1>
-        <div class="hero-blurb">Twenty-seven books of the Berean Standard Bible, read with the citation layers of the Church Fathers, the Reformers, and the Doctors.</div>
-      </div>
-    </div>
     <div class="section-label">Books</div>
     <ul class="books">${sorted.map(b =>
       `<li><a href="#/nt/${encodeURIComponent(b.book)}/">${b.book}<span class="n">${b.chapters} ch</span></a></li>`).join("")}</ul>`;
