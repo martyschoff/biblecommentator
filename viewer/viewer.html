@@ -190,7 +190,7 @@ function attributorsOf(key){
   for (const c of (CITATIONS[key]||[])){
     const seg = (c.text||"").split(" | ")[1] || "";
     const m = seg.match(/^([\w' .-]+?)\s*(?:\(via|,|\s\(|:)/);
-    if (m) set.add(NAME_FIX[m.group(1).trim()] || m.group(1).trim());
+    if (m) set.add(NAME_FIX[m[1].trim()] || m[1].trim());
   }
   const found = [...set];
   if (key === "rcdoctors"){
@@ -251,7 +251,7 @@ function renderButtons(){
 function attributorOfText(text){
   const seg = (text||"").split(" | ")[1] || "";
   const m = seg.match(/^([\w' .-]+?)\s*(?:\(via|,|\s\(|:)/);
-  return m ? (NAME_FIX[m.group(1).trim()] || m.group(1).trim()) : "";
+  return m ? (NAME_FIX[m[1].trim()] || m[1].trim()) : "";
 }
 function matchesPick(c, key){
   if (!pickedDoctor.value || key !== pickedDoctor.layer) return true;
