@@ -71,7 +71,7 @@ function nav(h){ location.hash = h; }
 
 function route(){
   const h = location.hash.slice(1); // e.g. /nt/John/1
-  const parts = h.split("/").filter(Boolean);
+  const parts = h.split("/").filter(Boolean).map(decodeURIComponent);
   if (parts.length === 0) return renderHome();
   if (parts.length === 2) return renderBook(parts[0], parts[1]);
   if (parts.length === 3) return renderChapter(parts[0], parts[1], parseInt(parts[2]));
